@@ -1,6 +1,6 @@
 /**
  * LIFEOS — Personal Life Operating System
- * Client-Side State Engine, Gamification Core & Telemetry
+ * Client-Side State Engine, Gamification Core, Personalized Routines & Work Reminders
  */
 
 // 1. Service Worker Registration for PWA
@@ -12,158 +12,138 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// 2. Default Seed State
+// 2. In-App Toast Engine
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span style="font-size: 1.1rem;">${type === 'reminder' ? '🔔' : type === 'success' ? '✓' : 'ℹ'}</span>
+    <div style="flex: 1;">${message}</div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(40px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+// 3. Audio Chime (Web Audio API Synthesizer)
+function playChime() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
+    
+    // Pleasant two-tone chime (587.33Hz D5 -> 880Hz A5)
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+    
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.6);
+  } catch (e) {
+    // AudioContext blocked until user gesture
+  }
+}
+
+// 4. Default Clean Seed State (No Random Fake Tasks!)
 const DEFAULT_STATE = {
   user: {
     username: 'Jayanta',
-    level: 12,
-    current_xp: 1420,
-    lifetime_xp: 18450,
-    coins: 485,
-    momentum_score: 0.84, // 0.0 to 1.0
-    deep_work_minutes_today: 150,
+    level: 1,
+    current_xp: 0,
+    lifetime_xp: 0,
+    coins: 0,
+    momentum_score: 0.50, // Starts at neutral 0.50
+    deep_work_minutes_today: 0,
     attributes: {
-      knowledge: 480,
-      technical: 920,
-      fitness: 410,
-      communication: 280,
-      creativity: 340,
-      finance: 220,
-      discipline: 650,
-      social: 190
+      knowledge: 0,
+      technical: 0,
+      fitness: 0,
+      communication: 0,
+      creativity: 0,
+      finance: 0,
+      discipline: 0,
+      social: 0
     }
   },
-  tasks: [
-    {
-      id: 't1',
-      title: 'Engineering Mathematics — Problem Set 3',
-      project_id: 'p2',
-      projectName: 'C & Math Fundamentals',
-      difficulty: 'hard',
-      estimated_minutes: 90,
-      base_xp: 40,
-      primary_attribute: 'technical',
-      status: 'completed'
-    },
-    {
-      id: 't2',
-      title: 'C Programming — Dynamic Memory & Pointers',
-      project_id: 'p2',
-      projectName: 'C & Math Fundamentals',
-      difficulty: 'medium',
-      estimated_minutes: 60,
-      base_xp: 35,
-      primary_attribute: 'technical',
-      status: 'completed'
-    },
-    {
-      id: 't3',
-      title: 'Running — 3 km Cadence Run',
-      project_id: 'p3',
-      projectName: 'Health Baseline',
-      difficulty: 'medium',
-      estimated_minutes: 30,
-      base_xp: 25,
-      primary_attribute: 'fitness',
-      status: 'completed'
-    },
-    {
-      id: 't4',
-      title: 'Reading — Modern Operating Systems (20 mins)',
-      project_id: 'p1',
-      projectName: 'DSA Foundation',
-      difficulty: 'easy',
-      estimated_minutes: 20,
-      base_xp: 15,
-      primary_attribute: 'knowledge',
-      status: 'todo'
-    }
+  // CLEAN SLATE: User adds their own tasks
+  tasks: [],
+  // Personalized Routines
+  routines: [
+    { id: 'r1', time: '06:30', title: 'Morning Hydration & Workout', area: 'Health', reminder: true, completedToday: false },
+    { id: 'r2', time: '09:00', title: 'Deep Work: Core Engineering Block', area: 'Deep Work', reminder: true, completedToday: false },
+    { id: 'r3', time: '14:00', title: 'Academic / Technical Studies', area: 'Academic', reminder: true, completedToday: false },
+    { id: 'r4', time: '18:00', title: 'Skill Projects & Code Practice', area: 'Deep Work', reminder: true, completedToday: false },
+    { id: 'r5', time: '21:30', title: 'Reading & Day Reflection', area: 'Reading', reminder: true, completedToday: false }
   ],
+  // Core Starter Habits
   habits: [
     {
       id: 'h1',
-      title: 'Hydrate 2L Daily',
-      current_streak: 14,
-      is_completed_today: true,
-      xp_reward: 10,
-      attribute: 'fitness'
+      title: 'Daily Deep Work (At least 45 mins)',
+      current_streak: 0,
+      is_completed_today: false,
+      xp_reward: 25,
+      attribute: 'discipline'
     },
     {
       id: 'h2',
-      title: 'DSA Practice (1 LeetCode Problem)',
-      current_streak: 6,
+      title: 'Daily Technical Practice / Problem Solving',
+      current_streak: 0,
       is_completed_today: false,
-      xp_reward: 25,
+      xp_reward: 20,
       attribute: 'technical'
-    },
-    {
-      id: 'h3',
-      title: 'Daily Technical Journal / Log',
-      current_streak: 9,
-      is_completed_today: true,
-      xp_reward: 15,
-      attribute: 'discipline'
     }
   ],
+  // Goals Lineage
   goals: [
     {
       id: 'g1',
       title: 'Become a High-Impact Software Engineer',
-      area: 'Career & Tech',
-      progress: 68,
+      area: 'Career',
+      progress: 0,
       milestones: [
         {
           id: 'm1',
-          title: 'Master CS Fundamentals & Algorithms',
+          title: 'Master Programming & Systems Fundamentals',
           completed: false,
-          progress: 75,
+          progress: 0,
           projects: [
-            { id: 'p1', title: 'DSA Foundation & Problem Sets', taskCount: 8, completedCount: 6 },
-            { id: 'p2', title: 'C Systems & Memory Architecture', taskCount: 6, completedCount: 5 }
-          ]
-        },
-        {
-          id: 'm2',
-          title: 'Build & Ship 2 Production Systems',
-          completed: false,
-          progress: 50,
-          projects: [
-            { id: 'p4', title: 'CampusRide Distributed Backend', taskCount: 5, completedCount: 2 }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'g2',
-      title: 'Physical Health & High Stamina Baseline',
-      area: 'Fitness',
-      progress: 60,
-      milestones: [
-        {
-          id: 'm3',
-          title: 'Consistent 5km Under 25 Mins',
-          completed: false,
-          progress: 60,
-          projects: [
-            { id: 'p3', title: 'Weekly Cadence Running', taskCount: 4, completedCount: 3 }
+            { id: 'p1', title: 'Algorithms & Data Structures', taskCount: 0, completedCount: 0 },
+            { id: 'p2', title: 'Low-Level & Cloud Architecture', taskCount: 0, completedCount: 0 }
           ]
         }
       ]
     }
   ],
+  // User-defined rewards store
   rewards: [
-    { id: 'r1', title: 'Specialty Roast Coffee at Café', cost: 30, redemptions: 4 },
-    { id: 'r2', title: 'Guilt-Free 60m Gaming Session', cost: 50, redemptions: 8 },
-    { id: 'r3', title: 'Weekend Movie Night with Friends', cost: 120, redemptions: 2 },
-    { id: 'r4', title: 'New Mechanical Keyboard Keycaps / Desk Mod', cost: 650, redemptions: 0 },
-    { id: 'r5', title: 'Physical CS Classic Book Purchase', cost: 350, redemptions: 1 }
-  ]
+    { id: 'r1', title: 'Specialty Coffee at Café', cost: 30, redemptions: 0 },
+    { id: 'r2', title: 'Guilt-Free 60m Gaming Session', cost: 50, redemptions: 0 },
+    { id: 'r3', title: 'Weekend Movie Night', cost: 120, redemptions: 0 }
+  ],
+  remindersEnabled: false
 };
 
-// 3. App State Container
+// 5. App State Container
 class StateManager {
   constructor() {
-    const saved = localStorage.getItem('lifeos_state_v1');
+    const saved = localStorage.getItem('lifeos_state_v2');
     if (saved) {
       try {
         this.data = JSON.parse(saved);
@@ -177,7 +157,7 @@ class StateManager {
   }
 
   save() {
-    localStorage.setItem('lifeos_state_v1', JSON.stringify(this.data));
+    localStorage.setItem('lifeos_state_v2', JSON.stringify(this.data));
   }
 
   reset() {
@@ -185,7 +165,7 @@ class StateManager {
     this.save();
   }
 
-  // Level Progression: XP = 150 * L^1.4 + 100
+  // XP Formula: 150 * L^1.4 + 100
   getNextLevelXp(level) {
     return Math.round(150 * Math.pow(level, 1.4) + 100);
   }
@@ -206,10 +186,11 @@ class StateManager {
       this.data.user.level += 1;
       required = this.getNextLevelXp(this.data.user.level);
       this.data.user.coins += 25; // Bonus coins on level up
-      alert(`🎉 Level Up! You have reached Level ${this.data.user.level}! (+25 bonus coins granted)`);
+      playChime();
+      showToast(`🎉 Level Up! You reached Level ${this.data.user.level}! (+25 bonus coins)`, 'success');
     }
 
-    // Momentum increment
+    // Update momentum
     this.data.user.momentum_score = Math.min(1.0, +(this.data.user.momentum_score * 0.98 + 0.05).toFixed(3));
     this.save();
   }
@@ -217,11 +198,17 @@ class StateManager {
 
 const state = new StateManager();
 
-// 4. UI Render Engines
+// 6. UI Render Engines
 function renderDashboard() {
   const user = state.data.user;
   const tasks = state.data.tasks;
   const habits = state.data.habits;
+  const routines = state.data.routines || [];
+
+  // Update date
+  const now = new Date();
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString(undefined, options);
 
   // Sidebar mini telemetry
   const nextXp = state.getNextLevelXp(user.level);
@@ -232,7 +219,7 @@ function renderDashboard() {
   document.getElementById('sideXpText').textContent = `${user.current_xp.toLocaleString()} / ${nextXp.toLocaleString()} XP`;
   document.getElementById('sideCoinText').textContent = `${user.coins} 🪙`;
 
-  // Top header stat pills
+  // Top header stats
   const momentumPercent = Math.round(user.momentum_score * 100);
   document.getElementById('topMomentumVal').textContent = `${momentumPercent}%`;
   document.getElementById('topCoinsVal').textContent = user.coins;
@@ -248,16 +235,25 @@ function renderDashboard() {
   
   const hours = Math.floor(user.deep_work_minutes_today / 60);
   const mins = user.deep_work_minutes_today % 60;
-  document.getElementById('statFocusTime').textContent = `${hours}h ${mins}m`;
+  document.getElementById('statFocusTime').textContent = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 
   const completedHabits = habits.filter(h => h.is_completed_today).length;
   document.getElementById('statHabitRatio').textContent = `${completedHabits} / ${habits.length}`;
 
-  // Task List
+  // Task List Render
   const taskListEl = document.getElementById('todayTaskList');
   taskListEl.innerHTML = '';
   if (tasks.length === 0) {
-    taskListEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 24px;">No tasks queued. Quick Add one!</div>`;
+    taskListEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <h3>Focus Queue is Ready</h3>
+        <p>No tasks scheduled yet. Add your personalized high-priority tasks to begin today's execution.</p>
+        <button class="btn btn-primary btn-sm" id="btnEmptyAddTask">+ Add Your First Task</button>
+      </div>
+    `;
+    const btn = document.getElementById('btnEmptyAddTask');
+    if (btn) btn.addEventListener('click', openQuickAddModal);
   } else {
     tasks.forEach(task => {
       const isDone = task.status === 'completed';
@@ -265,7 +261,7 @@ function renderDashboard() {
       item.className = `task-item ${isDone ? 'completed' : ''}`;
       item.innerHTML = `
         <div class="task-left">
-          <button class="checkbox-round" onclick="toggleTaskCompletion('${task.id}')">
+          <button class="checkbox-round" onclick="toggleTaskCompletion('${task.id}')" title="Check off task">
             ${isDone ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
           </button>
           <div class="task-info">
@@ -276,41 +272,148 @@ function renderDashboard() {
               <span>~${task.estimated_minutes} min</span>
               <span>&bull;</span>
               <span style="color: var(--accent-primary);">#${task.primary_attribute}</span>
+              ${task.reminderTime ? `<span>&bull;</span> <span style="color: #fbbf24;">🔔 ${task.reminderTime}</span>` : ''}
             </div>
           </div>
         </div>
-        <div class="task-rewards">
-          +${task.base_xp} XP
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="task-rewards">+${task.base_xp} XP</span>
+          <button class="btn-icon danger" onclick="deleteTask('${task.id}')" title="Remove Task">&times;</button>
         </div>
       `;
       taskListEl.appendChild(item);
     });
   }
 
-  // Habits List
+  // Habits List Render
   const habitListEl = document.getElementById('todayHabitList');
   habitListEl.innerHTML = '';
-  habits.forEach(habit => {
-    const isDone = habit.is_completed_today;
-    const item = document.createElement('div');
-    item.className = 'habit-item';
-    item.innerHTML = `
-      <div class="habit-details">
-        <span class="habit-title">${habit.title}</span>
-        <div class="streak-counter">
-          <span>🔥</span>
-          <span>${habit.current_streak} Day Streak</span>
-          <span>&bull;</span>
-          <span style="color: var(--accent-primary);">+${habit.xp_reward} XP</span>
+  if (habits.length === 0) {
+    habitListEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 12px;">No habits configured. Click + Habit to create one.</div>`;
+  } else {
+    habits.forEach(habit => {
+      const isDone = habit.is_completed_today;
+      const item = document.createElement('div');
+      item.className = 'habit-item';
+      item.innerHTML = `
+        <div class="habit-details">
+          <span class="habit-title">${habit.title}</span>
+          <div class="streak-counter">
+            <span>🔥</span>
+            <span>${habit.current_streak} Day Streak</span>
+            <span>&bull;</span>
+            <span style="color: var(--accent-primary);">+${habit.xp_reward} XP</span>
+          </div>
         </div>
+        <button class="btn btn-sm ${isDone ? 'btn-success' : 'btn-secondary'}" onclick="toggleHabit('${habit.id}')">
+          ${isDone ? 'Done ✓' : 'Check'}
+        </button>
+      `;
+      habitListEl.appendChild(item);
+    });
+  }
+
+  // Routine Timeline Render on Dashboard
+  renderDashboardRoutines();
+}
+
+// 7. Personalized Routine Rendering
+function renderDashboardRoutines() {
+  const container = document.getElementById('dashboardRoutineList');
+  if (!container) return;
+  container.innerHTML = '';
+  const routines = (state.data.routines || []).sort((a, b) => a.time.localeCompare(b.time));
+
+  if (routines.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 12px;">
+        No routine blocks configured yet. Click <strong>+ Add Block</strong> to organize your day.
       </div>
-      <button class="btn btn-sm ${isDone ? 'btn-success' : 'btn-secondary'}" onclick="toggleHabit('${habit.id}')">
-        ${isDone ? 'Done ✓' : 'Check'}
-      </button>
     `;
-    habitListEl.appendChild(item);
+    return;
+  }
+
+  routines.forEach(item => {
+    const row = document.createElement('div');
+    row.className = `routine-row ${item.completedToday ? 'done' : ''}`;
+    row.innerHTML = `
+      <div class="routine-left">
+        <button class="checkbox-round" onclick="toggleRoutineDone('${item.id}')" title="Check block done">
+          ${item.completedToday ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+        </button>
+        <span class="routine-time-badge">${item.time}</span>
+        <span class="routine-title">${item.title}</span>
+      </div>
+      <div class="routine-actions">
+        ${item.reminder ? '<span title="Reminder Active" style="font-size: 0.75rem; color: #fbbf24;">🔔</span>' : ''}
+        <span class="badge badge-medium" style="font-size: 0.7rem;">${item.area}</span>
+        <button class="btn-icon danger" onclick="deleteRoutine('${item.id}')" title="Delete block">&times;</button>
+      </div>
+    `;
+    container.appendChild(row);
   });
 }
+
+function renderFullRoutineManager() {
+  const container = document.getElementById('fullRoutineManagerList');
+  if (!container) return;
+  container.innerHTML = '';
+  const routines = (state.data.routines || []).sort((a, b) => a.time.localeCompare(b.time));
+
+  routines.forEach(item => {
+    const row = document.createElement('div');
+    row.className = `routine-row ${item.completedToday ? 'done' : ''}`;
+    row.innerHTML = `
+      <div class="routine-left">
+        <button class="checkbox-round" onclick="toggleRoutineDone('${item.id}')">
+          ${item.completedToday ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+        </button>
+        <span class="routine-time-badge" style="font-size: 0.85rem;">${item.time}</span>
+        <div>
+          <div class="routine-title" style="font-size: 0.95rem;">${item.title}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">${item.area} &bull; ${item.reminder ? '🔔 Notification Alert Active' : 'No notification'}</div>
+        </div>
+      </div>
+      <div class="routine-actions">
+        <button class="btn btn-secondary btn-sm" onclick="toggleRoutineReminder('${item.id}')">
+          ${item.reminder ? 'Disable Alert' : 'Enable Alert'}
+        </button>
+        <button class="btn-icon danger" onclick="deleteRoutine('${item.id}')" title="Delete block">&times;</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+window.toggleRoutineDone = function(id) {
+  const item = state.data.routines.find(r => r.id === id);
+  if (!item) return;
+  item.completedToday = !item.completedToday;
+  if (item.completedToday) {
+    state.addXpAndCoins(10, 1, 'discipline');
+    playChime();
+  }
+  state.save();
+  renderDashboardRoutines();
+  renderFullRoutineManager();
+};
+
+window.toggleRoutineReminder = function(id) {
+  const item = state.data.routines.find(r => r.id === id);
+  if (!item) return;
+  item.reminder = !item.reminder;
+  state.save();
+  renderFullRoutineManager();
+  renderDashboardRoutines();
+  showToast(item.reminder ? `Reminder enabled for ${item.title}` : `Reminder disabled for ${item.title}`);
+};
+
+window.deleteRoutine = function(id) {
+  state.data.routines = state.data.routines.filter(r => r.id !== id);
+  state.save();
+  renderDashboardRoutines();
+  renderFullRoutineManager();
+};
 
 // Toggle Task Completion
 window.toggleTaskCompletion = function(taskId) {
@@ -321,14 +424,21 @@ window.toggleTaskCompletion = function(taskId) {
     task.status = 'todo';
   } else {
     task.status = 'completed';
-    // Calculate rewards
     const xp = task.base_xp;
     const coins = Math.max(1, Math.round(xp / 10));
     state.addXpAndCoins(xp, coins, task.primary_attribute);
+    playChime();
+    showToast(`Task Complete: +${xp} XP & +${coins} 🪙 earned!`, 'success');
   }
   state.save();
   renderDashboard();
   renderCharacterProfile();
+};
+
+window.deleteTask = function(taskId) {
+  state.data.tasks = state.data.tasks.filter(t => t.id !== taskId);
+  state.save();
+  renderDashboard();
 };
 
 // Toggle Habit Check
@@ -340,6 +450,8 @@ window.toggleHabit = function(habitId) {
   if (habit.is_completed_today) {
     habit.current_streak += 1;
     state.addXpAndCoins(habit.xp_reward, 1, habit.attribute);
+    playChime();
+    showToast(`Habit Maintained: ${habit.title} (+${habit.xp_reward} XP)`, 'success');
   } else {
     habit.current_streak = Math.max(0, habit.current_streak - 1);
   }
@@ -348,7 +460,7 @@ window.toggleHabit = function(habitId) {
   renderHabitsView();
 };
 
-// 5. Render Quests (Lineage Tree)
+// 8. Quests Lineage Rendering
 function renderQuestsTree() {
   const container = document.getElementById('questLineageTree');
   container.innerHTML = '';
@@ -391,7 +503,7 @@ function renderQuestsTree() {
   });
 }
 
-// 6. Render Habits View
+// 9. Habits View
 function renderHabitsView() {
   const container = document.getElementById('fullHabitManagerList');
   container.innerHTML = '';
@@ -419,12 +531,11 @@ function renderHabitsView() {
   });
 }
 
-// 7. Character Profile & 8-Axis Radar Chart
+// 10. Character Profile & 8-Axis Radar Chart
 function renderCharacterProfile() {
   const user = state.data.user;
   const attrs = user.attributes;
 
-  // Render cards
   const grid = document.getElementById('attributeCardsGrid');
   grid.innerHTML = '';
   Object.keys(attrs).forEach(key => {
@@ -437,11 +548,9 @@ function renderCharacterProfile() {
     grid.appendChild(card);
   });
 
-  // Momentum meter
   const momentumPercent = Math.round(user.momentum_score * 100);
   document.getElementById('charMomentumFill').style.width = `${momentumPercent}%`;
 
-  // Draw 8-Axis Radar Chart on Canvas
   drawRadarChart(attrs);
 }
 
@@ -460,11 +569,9 @@ function drawRadarChart(attrs) {
   const keys = Object.keys(attrs);
   const totalAxes = keys.length;
   const angleStep = (Math.PI * 2) / totalAxes;
+  const maxVal = Math.max(200, ...Object.values(attrs));
 
-  // Max scale calculation
-  const maxVal = Math.max(1000, ...Object.values(attrs));
-
-  // Draw concentric polygonal grid
+  // Concentric polygon grids
   const levels = 4;
   ctx.strokeStyle = '#1e2235';
   ctx.lineWidth = 1;
@@ -483,7 +590,7 @@ function drawRadarChart(attrs) {
     ctx.stroke();
   }
 
-  // Draw axis spokes
+  // Draw axis spokes and labels
   for (let i = 0; i < totalAxes; i++) {
     const angle = i * angleStep - Math.PI / 2;
     const x = cx + radius * Math.cos(angle);
@@ -493,7 +600,6 @@ function drawRadarChart(attrs) {
     ctx.lineTo(x, y);
     ctx.stroke();
 
-    // Axis Labels
     const labelX = cx + (radius + 20) * Math.cos(angle);
     const labelY = cy + (radius + 20) * Math.sin(angle);
     ctx.fillStyle = '#9ca3af';
@@ -521,7 +627,7 @@ function drawRadarChart(attrs) {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Highlight points
+  // Points
   for (let i = 0; i < totalAxes; i++) {
     const val = attrs[keys[i]];
     const r = (val / maxVal) * radius;
@@ -535,7 +641,7 @@ function drawRadarChart(attrs) {
   }
 }
 
-// 8. Reward Store Render & Redemption
+// 11. Reward Store
 function renderRewardStore() {
   const container = document.getElementById('rewardStoreGrid');
   container.innerHTML = '';
@@ -569,19 +675,20 @@ window.redeemReward = function(rewardId) {
   if (!reward) return;
 
   if (state.data.user.coins < reward.cost) {
-    alert('Insufficient Coins! Complete deep work tasks to earn more.');
+    showToast('Insufficient Coins! Complete focus blocks and tasks to earn coins.', 'reminder');
     return;
   }
 
   state.data.user.coins -= reward.cost;
   reward.redemptions += 1;
   state.save();
-  alert(`Enjoy your reward: "${reward.title}"! 🪙 ${reward.cost} coins deducted.`);
+  playChime();
+  showToast(`Reward unlocked: "${reward.title}" (🪙 -${reward.cost})`, 'success');
   renderRewardStore();
   renderDashboard();
 };
 
-// 9. Focus Timer Implementation
+// 12. Focus Timer
 let timerInterval = null;
 let timerSeconds = 25 * 60;
 let isTimerRunning = false;
@@ -616,7 +723,8 @@ startTimerBtn.addEventListener('click', () => {
       } else {
         clearInterval(timerInterval);
         isTimerRunning = false;
-        alert('🎯 Deep Work Block Complete! +35 Deep Work XP, +4 Coins added!');
+        playChime();
+        showToast('🎯 Deep Work Block Complete! +35 Deep Work XP, +4 Coins added!', 'success');
         state.data.user.deep_work_minutes_today += 25;
         state.addXpAndCoins(35, 4, 'discipline');
         renderDashboard();
@@ -638,28 +746,134 @@ function resetTimer() {
 
 resetTimerBtn.addEventListener('click', resetTimer);
 
-// Energy Chips
-document.querySelectorAll('.energy-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('.energy-chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
+// 13. Work Reminder Engine (Periodic Checks)
+let lastNotifiedMinute = '';
+
+function checkWorkReminders() {
+  const now = new Date();
+  const currentHours = String(now.getHours()).padStart(2, '0');
+  const currentMins = String(now.getMinutes()).padStart(2, '0');
+  const currentTimeStr = `${currentHours}:${currentMins}`;
+
+  if (currentTimeStr === lastNotifiedMinute) return; // Prevent duplicate alerts in the same minute
+
+  // Check Routine Blocks with reminder enabled
+  const matchingRoutines = (state.data.routines || []).filter(r => r.reminder && r.time === currentTimeStr);
+  matchingRoutines.forEach(routine => {
+    triggerWorkNotification(`Time for: ${routine.title} (${routine.area})`);
+    lastNotifiedMinute = currentTimeStr;
   });
-});
 
-// Friction Chips in Review
-document.querySelectorAll('.friction-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    chip.classList.toggle('selected');
+  // Check Tasks with reminderTime
+  const matchingTasks = (state.data.tasks || []).filter(t => t.status !== 'completed' && t.reminderTime === currentTimeStr);
+  matchingTasks.forEach(task => {
+    triggerWorkNotification(`Work Reminder: ${task.title}`);
+    lastNotifiedMinute = currentTimeStr;
   });
+}
+
+function triggerWorkNotification(alertText) {
+  playChime();
+  showToast(`🔔 ${alertText}`, 'reminder');
+
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('LIFEOS Work Alert', {
+        body: alertText,
+        icon: './icons/icon-192.png',
+        badge: './icons/favicon.png'
+      });
+    } catch (e) {
+      console.warn('System notification error:', e);
+    }
+  }
+}
+
+// Check every 25 seconds for reliable minute match
+setInterval(checkWorkReminders, 25000);
+
+// Reminder Permission Toggle Handler
+const btnToggleReminders = document.getElementById('btnToggleReminders');
+const reminderBtnText = document.getElementById('reminderBtnText');
+
+async function setupReminderPermission() {
+  if (!('Notification' in window)) {
+    showToast('Notifications not supported on this browser.', 'reminder');
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    showToast('Reminders are active! You will receive alerts for scheduled work.', 'success');
+  } else {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      showToast('Notifications enabled! Reminders will chime on time.', 'success');
+      playChime();
+    } else {
+      showToast('Notification permission was not granted.', 'reminder');
+    }
+  }
+  updateReminderUi();
+}
+
+function updateReminderUi() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    reminderBtnText.textContent = 'Alerts: On ✓';
+    btnToggleReminders.style.borderColor = 'var(--accent-success)';
+  } else {
+    reminderBtnText.textContent = 'Enable Alerts 🔔';
+  }
+}
+
+btnToggleReminders.addEventListener('click', setupReminderPermission);
+updateReminderUi();
+
+// 14. In-Browser Installation Logic (PWA)
+let deferredPrompt = null;
+const btnInstallApp = document.getElementById('btnInstallApp');
+const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+const btnBannerInstall = document.getElementById('btnBannerInstall');
+const btnDismissBanner = document.getElementById('btnDismissBanner');
+const installGuideModal = document.getElementById('installGuideModal');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show prominent buttons
+  if (btnInstallApp) btnInstallApp.style.display = 'inline-flex';
+  if (pwaInstallBanner) pwaInstallBanner.style.display = 'flex';
 });
 
-document.getElementById('btnLockWeeklyReview').addEventListener('click', () => {
-  state.addXpAndCoins(100, 10, 'discipline');
-  alert('✨ Weekly Review locked in! +100 Discipline XP and +10 Coins awarded.');
-  renderDashboard();
+async function triggerInstallFlow() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const choiceResult = await deferredPrompt.userChoice;
+    if (choiceResult.outcome === 'accepted') {
+      showToast('Installing LIFEOS...', 'success');
+    }
+    deferredPrompt = null;
+    if (btnInstallApp) btnInstallApp.style.display = 'none';
+    if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
+  } else {
+    // Show instruction modal if already installed or on iOS/desktop where prompt isn't fired
+    installGuideModal.classList.add('active');
+  }
+}
+
+if (btnInstallApp) btnInstallApp.addEventListener('click', triggerInstallFlow);
+if (btnBannerInstall) btnBannerInstall.addEventListener('click', triggerInstallFlow);
+if (btnDismissBanner) btnDismissBanner.addEventListener('click', () => {
+  pwaInstallBanner.style.display = 'none';
 });
 
-// 10. Navigation Tabs
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  if (btnInstallApp) btnInstallApp.style.display = 'none';
+  if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
+  showToast('LIFEOS installed to your device successfully!', 'success');
+});
+
+// 15. Navigation Setup
 function setupNavigation() {
   const navItems = document.querySelectorAll('[data-view]');
   const views = document.querySelectorAll('.view-content');
@@ -675,6 +889,7 @@ function setupNavigation() {
       const activeViewEl = document.getElementById(targetView);
       if (activeViewEl) activeViewEl.classList.add('active');
 
+      if (targetView === 'view-routine') renderFullRoutineManager();
       if (targetView === 'view-quests') renderQuestsTree();
       if (targetView === 'view-habits') renderHabitsView();
       if (targetView === 'view-character') renderCharacterProfile();
@@ -683,13 +898,37 @@ function setupNavigation() {
   });
 }
 
-// 11. Modal Setup
+// 16. Modals & Forms
 const quickAddModal = document.getElementById('quickAddModal');
 const openQuickAddBtn = document.getElementById('openQuickAddBtn');
+const btnOpenTaskModalDirect = document.getElementById('btnOpenTaskModalDirect');
+const routineModal = document.getElementById('routineModal');
+const btnOpenAddRoutineModal = document.getElementById('btnOpenAddRoutineModal');
+const btnOpenAddRoutineModal2 = document.getElementById('btnOpenAddRoutineModal2');
+const addHabitModal = document.getElementById('addHabitModal');
+const openAddHabitBtn = document.getElementById('openAddHabitBtn');
+const openAddHabitFullBtn = document.getElementById('openAddHabitFullBtn');
 const addRewardModal = document.getElementById('addRewardModal');
 const openAddRewardBtn = document.getElementById('openAddRewardBtn');
 
-openQuickAddBtn.addEventListener('click', () => quickAddModal.classList.add('active'));
+function openQuickAddModal() {
+  quickAddModal.classList.add('active');
+  document.getElementById('taskTitleInput').focus();
+}
+
+openQuickAddBtn.addEventListener('click', openQuickAddModal);
+if (btnOpenTaskModalDirect) btnOpenTaskModalDirect.addEventListener('click', openQuickAddModal);
+
+function openRoutineModal() {
+  routineModal.classList.add('active');
+  document.getElementById('routineTitleInput').focus();
+}
+
+if (btnOpenAddRoutineModal) btnOpenAddRoutineModal.addEventListener('click', openRoutineModal);
+if (btnOpenAddRoutineModal2) btnOpenAddRoutineModal2.addEventListener('click', openRoutineModal);
+
+if (openAddHabitBtn) openAddHabitBtn.addEventListener('click', () => addHabitModal.classList.add('active'));
+if (openAddHabitFullBtn) openAddHabitFullBtn.addEventListener('click', () => addHabitModal.classList.add('active'));
 if (openAddRewardBtn) openAddRewardBtn.addEventListener('click', () => addRewardModal.classList.add('active'));
 
 document.querySelectorAll('.closeModalBtn').forEach(btn => {
@@ -698,24 +937,24 @@ document.querySelectorAll('.closeModalBtn').forEach(btn => {
   });
 });
 
-// Form Submissions
+// Quick Add Task Form Submit
 document.getElementById('quickAddForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const title = document.getElementById('taskTitleInput').value.trim();
   const difficulty = document.getElementById('taskDifficultyInput').value;
   const duration = parseInt(document.getElementById('taskDurationInput').value) || 30;
   const attribute = document.getElementById('taskAttributeInput').value;
+  const reminderTime = document.getElementById('taskReminderTimeInput').value;
 
   const xpMap = { easy: 15, medium: 35, hard: 70, epic: 150 };
   const newTask = {
     id: 't_' + Date.now(),
     title: title,
-    project_id: 'p1',
-    projectName: 'General Execution',
     difficulty: difficulty,
     estimated_minutes: duration,
     base_xp: xpMap[difficulty] || 25,
     primary_attribute: attribute,
+    reminderTime: reminderTime || null,
     status: 'todo'
   };
 
@@ -724,9 +963,61 @@ document.getElementById('quickAddForm').addEventListener('submit', (e) => {
 
   quickAddModal.classList.remove('active');
   document.getElementById('taskTitleInput').value = '';
+  document.getElementById('taskReminderTimeInput').value = '';
+  showToast(`Task added to focus queue: "${title}"`, 'success');
   renderDashboard();
 });
 
+// Routine Block Form Submit
+document.getElementById('routineForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const time = document.getElementById('routineTimeInput').value;
+  const title = document.getElementById('routineTitleInput').value.trim();
+  const area = document.getElementById('routineAreaInput').value;
+  const reminder = document.getElementById('routineReminderCheckbox').checked;
+
+  state.data.routines.push({
+    id: 'r_' + Date.now(),
+    time: time,
+    title: title,
+    area: area,
+    reminder: reminder,
+    completedToday: false
+  });
+  state.save();
+
+  routineModal.classList.remove('active');
+  document.getElementById('routineTitleInput').value = '';
+  showToast(`Added routine block at ${time}: "${title}"`, 'success');
+  renderDashboardRoutines();
+  renderFullRoutineManager();
+});
+
+// Add Habit Form Submit
+document.getElementById('addHabitForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const title = document.getElementById('habitTitleInput').value.trim();
+  const attribute = document.getElementById('habitAttributeInput').value;
+  const xp = parseInt(document.getElementById('habitXpInput').value) || 15;
+
+  state.data.habits.push({
+    id: 'h_' + Date.now(),
+    title: title,
+    current_streak: 0,
+    is_completed_today: false,
+    xp_reward: xp,
+    attribute: attribute
+  });
+  state.save();
+
+  addHabitModal.classList.remove('active');
+  document.getElementById('habitTitleInput').value = '';
+  showToast(`Habit created: "${title}"`, 'success');
+  renderDashboard();
+  renderHabitsView();
+});
+
+// Add Reward Form Submit
 document.getElementById('addRewardForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const title = document.getElementById('rewardTitleInput').value.trim();
@@ -741,10 +1032,11 @@ document.getElementById('addRewardForm').addEventListener('submit', (e) => {
   state.save();
   addRewardModal.classList.remove('active');
   document.getElementById('rewardTitleInput').value = '';
+  showToast(`Custom reward added to shop!`, 'success');
   renderRewardStore();
 });
 
-// 12. Data Export / Import
+// 17. Data Export / Import
 document.getElementById('btnExportData').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -764,40 +1056,47 @@ importFileInput.addEventListener('change', (e) => {
   reader.onload = (event) => {
     try {
       const imported = JSON.parse(event.target.result);
-      if (imported.user && imported.tasks) {
+      if (imported.user) {
         state.data = imported;
         state.save();
-        alert('Data imported successfully!');
+        showToast('Data imported successfully!', 'success');
         window.location.reload();
       } else {
-        alert('Invalid LIFEOS backup format.');
+        showToast('Invalid LIFEOS backup file format.', 'reminder');
       }
     } catch (err) {
-      alert('Error parsing JSON backup file.');
+      showToast('Error reading backup file.', 'reminder');
     }
   };
   reader.readAsText(file);
 });
 
 document.getElementById('btnResetData').addEventListener('click', () => {
-  if (confirm('Reset all LIFEOS data to demo seed state?')) {
+  if (confirm('Clean reset LIFEOS to a fresh personalized slate?')) {
     state.reset();
     window.location.reload();
   }
 });
 
-// Hotkey: Press 'q' or 'c' to Quick Add
+// Weekly review lock
+document.getElementById('btnLockWeeklyReview').addEventListener('click', () => {
+  state.addXpAndCoins(100, 10, 'discipline');
+  playChime();
+  showToast('✨ Weekly Review locked in! +100 Discipline XP & +10 Coins awarded.', 'success');
+  renderDashboard();
+});
+
+// Global hotkeys ('q' or 'c')
 window.addEventListener('keydown', (e) => {
   if ((e.key === 'q' || e.key === 'c') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
     e.preventDefault();
-    quickAddModal.classList.add('active');
-    document.getElementById('taskTitleInput').focus();
+    openQuickAddModal();
   }
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
   }
 });
 
-// Initial boot
+// Initial Render
 setupNavigation();
 renderDashboard();
