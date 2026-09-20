@@ -1,18 +1,52 @@
 /**
  * LIFEOS — Personal Life Operating System
- * Client-Side State Engine, Gamification Core, Personalized Routines & Work Reminders
+ * Client-Side State Engine, Gamification Core, Theme Switcher, Personalized Routines & Work Reminders
  */
 
 // 1. Service Worker Registration for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
+    navigator.serviceWorker.register('sw.js')
       .then(reg => console.log('LIFEOS Service Worker active:', reg.scope))
       .catch(err => console.warn('Service Worker registration failed:', err));
   });
 }
 
-// 2. In-App Toast Engine
+// 2. Theme Engine (Dark Mode / Light Mode)
+let currentTheme = localStorage.getItem('lifeos_theme') || 'dark';
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('lifeos_theme', theme);
+
+  // Update theme icons (show Sun when in dark mode to switch to light, and vice versa)
+  const icons = document.querySelectorAll('.theme-icon');
+  icons.forEach(el => {
+    el.textContent = theme === 'dark' ? '☀️' : '🌙';
+  });
+
+  // Update theme-color meta tag for mobile status bar
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', theme === 'dark' ? '#090a0f' : '#f8fafc');
+  }
+
+  // Redraw canvas radar with theme-matched colors if character view is active
+  renderCharacterProfile();
+}
+
+function toggleTheme() {
+  const next = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  showToast(`Switched to ${next.toUpperCase()} mode`, 'info');
+}
+
+document.querySelectorAll('.themeToggleAction').forEach(btn => {
+  btn.addEventListener('click', toggleTheme);
+});
+
+// 3. In-App Toast Engine
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
   if (!container) return;
@@ -25,13 +59,13 @@ function showToast(message, type = 'info') {
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.opacity = '0';
-    toast.style.transform = 'translateX(40px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
+    toast.style.transform = 'translateY(-10px)';
+    toast.style.transition = 'all 0.25s ease';
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
 }
 
-// 3. Audio Chime (Web Audio API Synthesizer)
+// 4. Audio Chime (Web Audio API Synthesizer)
 function playChime() {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -39,7 +73,7 @@ function playChime() {
     const ctx = new AudioContext();
     const now = ctx.currentTime;
     
-    // Pleasant two-tone chime (587.33Hz D5 -> 880Hz A5)
+    // Pleasant chime (587.33Hz D5 -> 880Hz A5)
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
@@ -56,11 +90,11 @@ function playChime() {
     osc.start(now);
     osc.stop(now + 0.6);
   } catch (e) {
-    // AudioContext blocked until user gesture
+    // Blocked until user interaction
   }
 }
 
-// 4. Default Clean Seed State (No Random Fake Tasks!)
+// 5. Default Clean State (No Random Fake Tasks!)
 const DEFAULT_STATE = {
   user: {
     username: 'Jayanta',
@@ -68,7 +102,7 @@ const DEFAULT_STATE = {
     current_xp: 0,
     lifetime_xp: 0,
     coins: 0,
-    momentum_score: 0.50, // Starts at neutral 0.50
+    momentum_score: 0.50,
     deep_work_minutes_today: 0,
     attributes: {
       knowledge: 0,
@@ -81,7 +115,7 @@ const DEFAULT_STATE = {
       social: 0
     }
   },
-  // CLEAN SLATE: User adds their own tasks
+  // Clean tasks queue: User adds their own
   tasks: [],
   // Personalized Routines
   routines: [
@@ -110,7 +144,6 @@ const DEFAULT_STATE = {
       attribute: 'technical'
     }
   ],
-  // Goals Lineage
   goals: [
     {
       id: 'g1',
@@ -131,19 +164,17 @@ const DEFAULT_STATE = {
       ]
     }
   ],
-  // User-defined rewards store
   rewards: [
     { id: 'r1', title: 'Specialty Coffee at Café', cost: 30, redemptions: 0 },
     { id: 'r2', title: 'Guilt-Free 60m Gaming Session', cost: 50, redemptions: 0 },
     { id: 'r3', title: 'Weekend Movie Night', cost: 120, redemptions: 0 }
-  ],
-  remindersEnabled: false
+  ]
 };
 
-// 5. App State Container
+// 6. State Manager
 class StateManager {
   constructor() {
-    const saved = localStorage.getItem('lifeos_state_v2');
+    const saved = localStorage.getItem('lifeos_state_v3');
     if (saved) {
       try {
         this.data = JSON.parse(saved);
@@ -157,7 +188,7 @@ class StateManager {
   }
 
   save() {
-    localStorage.setItem('lifeos_state_v2', JSON.stringify(this.data));
+    localStorage.setItem('lifeos_state_v3', JSON.stringify(this.data));
   }
 
   reset() {
@@ -165,7 +196,6 @@ class StateManager {
     this.save();
   }
 
-  // XP Formula: 150 * L^1.4 + 100
   getNextLevelXp(level) {
     return Math.round(150 * Math.pow(level, 1.4) + 100);
   }
@@ -179,18 +209,16 @@ class StateManager {
       this.data.user.attributes[attribute] += xp;
     }
 
-    // Level check
     let required = this.getNextLevelXp(this.data.user.level);
     while (this.data.user.current_xp >= required) {
       this.data.user.current_xp -= required;
       this.data.user.level += 1;
       required = this.getNextLevelXp(this.data.user.level);
-      this.data.user.coins += 25; // Bonus coins on level up
+      this.data.user.coins += 25;
       playChime();
       showToast(`🎉 Level Up! You reached Level ${this.data.user.level}! (+25 bonus coins)`, 'success');
     }
 
-    // Update momentum
     this.data.user.momentum_score = Math.min(1.0, +(this.data.user.momentum_score * 0.98 + 0.05).toFixed(3));
     this.save();
   }
@@ -198,12 +226,11 @@ class StateManager {
 
 const state = new StateManager();
 
-// 6. UI Render Engines
+// 7. Render Dashboard
 function renderDashboard() {
   const user = state.data.user;
-  const tasks = state.data.tasks;
-  const habits = state.data.habits;
-  const routines = state.data.routines || [];
+  const tasks = state.data.tasks || [];
+  const habits = state.data.habits || [];
 
   // Update date
   const now = new Date();
@@ -261,7 +288,7 @@ function renderDashboard() {
       item.className = `task-item ${isDone ? 'completed' : ''}`;
       item.innerHTML = `
         <div class="task-left">
-          <button class="checkbox-round" onclick="toggleTaskCompletion('${task.id}')" title="Check off task">
+          <button class="checkbox-round" onclick="toggleTaskCompletion('${task.id}')" title="Complete task">
             ${isDone ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
           </button>
           <div class="task-info">
@@ -276,9 +303,9 @@ function renderDashboard() {
             </div>
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
           <span class="task-rewards">+${task.base_xp} XP</span>
-          <button class="btn-icon danger" onclick="deleteTask('${task.id}')" title="Remove Task">&times;</button>
+          <button class="btn-icon danger" onclick="deleteTask('${task.id}')" title="Remove">&times;</button>
         </div>
       `;
       taskListEl.appendChild(item);
@@ -313,11 +340,10 @@ function renderDashboard() {
     });
   }
 
-  // Routine Timeline Render on Dashboard
   renderDashboardRoutines();
 }
 
-// 7. Personalized Routine Rendering
+// 8. Personalized Routines
 function renderDashboardRoutines() {
   const container = document.getElementById('dashboardRoutineList');
   if (!container) return;
@@ -327,7 +353,7 @@ function renderDashboardRoutines() {
   if (routines.length === 0) {
     container.innerHTML = `
       <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 12px;">
-        No routine blocks configured yet. Click <strong>+ Add Block</strong> to organize your day.
+        No routine blocks configured. Click <strong>+ Add Block</strong> to organize your day.
       </div>
     `;
     return;
@@ -415,7 +441,7 @@ window.deleteRoutine = function(id) {
   renderFullRoutineManager();
 };
 
-// Toggle Task Completion
+// Toggle Task
 window.toggleTaskCompletion = function(taskId) {
   const task = state.data.tasks.find(t => t.id === taskId);
   if (!task) return;
@@ -460,9 +486,10 @@ window.toggleHabit = function(habitId) {
   renderHabitsView();
 };
 
-// 8. Quests Lineage Rendering
+// 9. Quests Lineage Rendering
 function renderQuestsTree() {
   const container = document.getElementById('questLineageTree');
+  if (!container) return;
   container.innerHTML = '';
 
   state.data.goals.forEach(goal => {
@@ -503,9 +530,10 @@ function renderQuestsTree() {
   });
 }
 
-// 9. Habits View
+// 10. Habits View
 function renderHabitsView() {
   const container = document.getElementById('fullHabitManagerList');
+  if (!container) return;
   container.innerHTML = '';
 
   state.data.habits.forEach(habit => {
@@ -520,7 +548,7 @@ function renderHabitsView() {
           <span>Attribute: #${habit.attribute}</span>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
         <span class="badge badge-easy">+${habit.xp_reward} XP</span>
         <button class="btn btn-sm ${habit.is_completed_today ? 'btn-success' : 'btn-secondary'}" onclick="toggleHabit('${habit.id}')">
           ${habit.is_completed_today ? 'Completed Today ✓' : 'Mark Done'}
@@ -531,25 +559,28 @@ function renderHabitsView() {
   });
 }
 
-// 10. Character Profile & 8-Axis Radar Chart
+// 11. Character Profile & 8-Axis Radar Chart
 function renderCharacterProfile() {
   const user = state.data.user;
   const attrs = user.attributes;
 
   const grid = document.getElementById('attributeCardsGrid');
-  grid.innerHTML = '';
-  Object.keys(attrs).forEach(key => {
-    const card = document.createElement('div');
-    card.className = 'attr-card';
-    card.innerHTML = `
-      <span class="attr-name">${key}</span>
-      <span class="attr-val">${attrs[key]} XP</span>
-    `;
-    grid.appendChild(card);
-  });
+  if (grid) {
+    grid.innerHTML = '';
+    Object.keys(attrs).forEach(key => {
+      const card = document.createElement('div');
+      card.className = 'attr-card';
+      card.innerHTML = `
+        <span class="attr-name">${key}</span>
+        <span class="attr-val">${attrs[key]} XP</span>
+      `;
+      grid.appendChild(card);
+    });
+  }
 
   const momentumPercent = Math.round(user.momentum_score * 100);
-  document.getElementById('charMomentumFill').style.width = `${momentumPercent}%`;
+  const fill = document.getElementById('charMomentumFill');
+  if (fill) fill.style.width = `${momentumPercent}%`;
 
   drawRadarChart(attrs);
 }
@@ -571,9 +602,15 @@ function drawRadarChart(attrs) {
   const angleStep = (Math.PI * 2) / totalAxes;
   const maxVal = Math.max(200, ...Object.values(attrs));
 
+  const isLight = currentTheme === 'light';
+  const gridColor = isLight ? '#e2e8f0' : '#1e2235';
+  const labelColor = isLight ? '#475569' : '#9ca3af';
+  const polyFill = isLight ? 'rgba(79, 70, 229, 0.22)' : 'rgba(99, 102, 241, 0.35)';
+  const polyStroke = isLight ? '#4f46e5' : '#6366f1';
+
   // Concentric polygon grids
   const levels = 4;
-  ctx.strokeStyle = '#1e2235';
+  ctx.strokeStyle = gridColor;
   ctx.lineWidth = 1;
 
   for (let l = 1; l <= levels; l++) {
@@ -602,7 +639,7 @@ function drawRadarChart(attrs) {
 
     const labelX = cx + (radius + 20) * Math.cos(angle);
     const labelY = cy + (radius + 20) * Math.sin(angle);
-    ctx.fillStyle = '#9ca3af';
+    ctx.fillStyle = labelColor;
     ctx.font = '10px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -621,9 +658,9 @@ function drawRadarChart(attrs) {
     else ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(99, 102, 241, 0.35)';
+  ctx.fillStyle = polyFill;
   ctx.fill();
-  ctx.strokeStyle = '#6366f1';
+  ctx.strokeStyle = polyStroke;
   ctx.lineWidth = 2;
   ctx.stroke();
 
@@ -636,14 +673,15 @@ function drawRadarChart(attrs) {
     const y = cy + r * Math.sin(angle);
     ctx.beginPath();
     ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#818cf8';
+    ctx.fillStyle = polyStroke;
     ctx.fill();
   }
 }
 
-// 11. Reward Store
+// 12. Reward Store
 function renderRewardStore() {
   const container = document.getElementById('rewardStoreGrid');
+  if (!container) return;
   container.innerHTML = '';
 
   state.data.rewards.forEach(reward => {
@@ -675,7 +713,7 @@ window.redeemReward = function(rewardId) {
   if (!reward) return;
 
   if (state.data.user.coins < reward.cost) {
-    showToast('Insufficient Coins! Complete focus blocks and tasks to earn coins.', 'reminder');
+    showToast('Insufficient Coins! Complete focus blocks to earn coins.', 'reminder');
     return;
   }
 
@@ -688,7 +726,7 @@ window.redeemReward = function(rewardId) {
   renderDashboard();
 };
 
-// 12. Focus Timer
+// 13. Focus Timer
 let timerInterval = null;
 let timerSeconds = 25 * 60;
 let isTimerRunning = false;
@@ -746,7 +784,7 @@ function resetTimer() {
 
 resetTimerBtn.addEventListener('click', resetTimer);
 
-// 13. Work Reminder Engine (Periodic Checks)
+// 14. Work Reminder Engine
 let lastNotifiedMinute = '';
 
 function checkWorkReminders() {
@@ -755,16 +793,14 @@ function checkWorkReminders() {
   const currentMins = String(now.getMinutes()).padStart(2, '0');
   const currentTimeStr = `${currentHours}:${currentMins}`;
 
-  if (currentTimeStr === lastNotifiedMinute) return; // Prevent duplicate alerts in the same minute
+  if (currentTimeStr === lastNotifiedMinute) return;
 
-  // Check Routine Blocks with reminder enabled
   const matchingRoutines = (state.data.routines || []).filter(r => r.reminder && r.time === currentTimeStr);
   matchingRoutines.forEach(routine => {
     triggerWorkNotification(`Time for: ${routine.title} (${routine.area})`);
     lastNotifiedMinute = currentTimeStr;
   });
 
-  // Check Tasks with reminderTime
   const matchingTasks = (state.data.tasks || []).filter(t => t.status !== 'completed' && t.reminderTime === currentTimeStr);
   matchingTasks.forEach(task => {
     triggerWorkNotification(`Work Reminder: ${task.title}`);
@@ -780,8 +816,8 @@ function triggerWorkNotification(alertText) {
     try {
       new Notification('LIFEOS Work Alert', {
         body: alertText,
-        icon: './icons/icon-192.png',
-        badge: './icons/favicon.png'
+        icon: 'icons/icon-192.png',
+        badge: 'icons/favicon.png'
       });
     } catch (e) {
       console.warn('System notification error:', e);
@@ -789,21 +825,17 @@ function triggerWorkNotification(alertText) {
   }
 }
 
-// Check every 25 seconds for reliable minute match
 setInterval(checkWorkReminders, 25000);
 
-// Reminder Permission Toggle Handler
-const btnToggleReminders = document.getElementById('btnToggleReminders');
-const reminderBtnText = document.getElementById('reminderBtnText');
-
+// Toggle Reminders Permission
 async function setupReminderPermission() {
   if (!('Notification' in window)) {
-    showToast('Notifications not supported on this browser.', 'reminder');
+    showToast('Notifications not supported in this browser.', 'reminder');
     return;
   }
 
   if (Notification.permission === 'granted') {
-    showToast('Reminders are active! You will receive alerts for scheduled work.', 'success');
+    showToast('Reminders are already active! You will receive alerts on time.', 'success');
   } else {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
@@ -817,20 +849,24 @@ async function setupReminderPermission() {
 }
 
 function updateReminderUi() {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    reminderBtnText.textContent = 'Alerts: On ✓';
-    btnToggleReminders.style.borderColor = 'var(--accent-success)';
-  } else {
-    reminderBtnText.textContent = 'Enable Alerts 🔔';
-  }
+  const isGranted = 'Notification' in window && Notification.permission === 'granted';
+  const textDesktop = document.getElementById('reminderBtnTextDesktop');
+  const iconMobile = document.getElementById('reminderIconMobile');
+
+  if (textDesktop) textDesktop.textContent = isGranted ? 'Alerts: On ✓' : 'Alerts';
+  if (iconMobile) iconMobile.textContent = isGranted ? '🔔✓' : '🔔';
 }
 
-btnToggleReminders.addEventListener('click', setupReminderPermission);
+const btnToggleRemindersDesktop = document.getElementById('btnToggleRemindersDesktop');
+const btnToggleRemindersMobile = document.getElementById('btnToggleRemindersMobile');
+if (btnToggleRemindersDesktop) btnToggleRemindersDesktop.addEventListener('click', setupReminderPermission);
+if (btnToggleRemindersMobile) btnToggleRemindersMobile.addEventListener('click', setupReminderPermission);
 updateReminderUi();
 
-// 14. In-Browser Installation Logic (PWA)
+// 15. In-Browser PWA Installation Logic
 let deferredPrompt = null;
-const btnInstallApp = document.getElementById('btnInstallApp');
+const btnInstallAppDesktop = document.getElementById('btnInstallAppDesktop');
+const btnInstallAppMobile = document.getElementById('btnInstallAppMobile');
 const pwaInstallBanner = document.getElementById('pwaInstallBanner');
 const btnBannerInstall = document.getElementById('btnBannerInstall');
 const btnDismissBanner = document.getElementById('btnDismissBanner');
@@ -839,8 +875,8 @@ const installGuideModal = document.getElementById('installGuideModal');
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Show prominent buttons
-  if (btnInstallApp) btnInstallApp.style.display = 'inline-flex';
+  if (btnInstallAppDesktop) btnInstallAppDesktop.style.display = 'inline-flex';
+  if (btnInstallAppMobile) btnInstallAppMobile.style.display = 'inline-flex';
   if (pwaInstallBanner) pwaInstallBanner.style.display = 'flex';
 });
 
@@ -852,15 +888,17 @@ async function triggerInstallFlow() {
       showToast('Installing LIFEOS...', 'success');
     }
     deferredPrompt = null;
-    if (btnInstallApp) btnInstallApp.style.display = 'none';
+    if (btnInstallAppDesktop) btnInstallAppDesktop.style.display = 'none';
+    if (btnInstallAppMobile) btnInstallAppMobile.style.display = 'none';
     if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
   } else {
-    // Show instruction modal if already installed or on iOS/desktop where prompt isn't fired
+    // Show instruction modal if already prompted, or on Safari/iOS/browser without automated trigger
     installGuideModal.classList.add('active');
   }
 }
 
-if (btnInstallApp) btnInstallApp.addEventListener('click', triggerInstallFlow);
+if (btnInstallAppDesktop) btnInstallAppDesktop.addEventListener('click', triggerInstallFlow);
+if (btnInstallAppMobile) btnInstallAppMobile.addEventListener('click', triggerInstallFlow);
 if (btnBannerInstall) btnBannerInstall.addEventListener('click', triggerInstallFlow);
 if (btnDismissBanner) btnDismissBanner.addEventListener('click', () => {
   pwaInstallBanner.style.display = 'none';
@@ -868,12 +906,13 @@ if (btnDismissBanner) btnDismissBanner.addEventListener('click', () => {
 
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
-  if (btnInstallApp) btnInstallApp.style.display = 'none';
+  if (btnInstallAppDesktop) btnInstallAppDesktop.style.display = 'none';
+  if (btnInstallAppMobile) btnInstallAppMobile.style.display = 'none';
   if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
   showToast('LIFEOS installed to your device successfully!', 'success');
 });
 
-// 15. Navigation Setup
+// 16. Navigation Setup
 function setupNavigation() {
   const navItems = document.querySelectorAll('[data-view]');
   const views = document.querySelectorAll('.view-content');
@@ -889,6 +928,8 @@ function setupNavigation() {
       const activeViewEl = document.getElementById(targetView);
       if (activeViewEl) activeViewEl.classList.add('active');
 
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       if (targetView === 'view-routine') renderFullRoutineManager();
       if (targetView === 'view-quests') renderQuestsTree();
       if (targetView === 'view-habits') renderHabitsView();
@@ -898,9 +939,10 @@ function setupNavigation() {
   });
 }
 
-// 16. Modals & Forms
+// 17. Modals & Forms
 const quickAddModal = document.getElementById('quickAddModal');
 const openQuickAddBtn = document.getElementById('openQuickAddBtn');
+const btnMobileQuickAdd = document.getElementById('btnMobileQuickAdd');
 const btnOpenTaskModalDirect = document.getElementById('btnOpenTaskModalDirect');
 const routineModal = document.getElementById('routineModal');
 const btnOpenAddRoutineModal = document.getElementById('btnOpenAddRoutineModal');
@@ -916,7 +958,8 @@ function openQuickAddModal() {
   document.getElementById('taskTitleInput').focus();
 }
 
-openQuickAddBtn.addEventListener('click', openQuickAddModal);
+if (openQuickAddBtn) openQuickAddBtn.addEventListener('click', openQuickAddModal);
+if (btnMobileQuickAdd) btnMobileQuickAdd.addEventListener('click', openQuickAddModal);
 if (btnOpenTaskModalDirect) btnOpenTaskModalDirect.addEventListener('click', openQuickAddModal);
 
 function openRoutineModal() {
@@ -1036,7 +1079,7 @@ document.getElementById('addRewardForm').addEventListener('submit', (e) => {
   renderRewardStore();
 });
 
-// 17. Data Export / Import
+// 18. Data Export / Import
 document.getElementById('btnExportData').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1062,7 +1105,7 @@ importFileInput.addEventListener('change', (e) => {
         showToast('Data imported successfully!', 'success');
         window.location.reload();
       } else {
-        showToast('Invalid LIFEOS backup file format.', 'reminder');
+        showToast('Invalid backup file format.', 'reminder');
       }
     } catch (err) {
       showToast('Error reading backup file.', 'reminder');
@@ -1072,7 +1115,7 @@ importFileInput.addEventListener('change', (e) => {
 });
 
 document.getElementById('btnResetData').addEventListener('click', () => {
-  if (confirm('Clean reset LIFEOS to a fresh personalized slate?')) {
+  if (confirm('Clean reset LIFEOS to default state?')) {
     state.reset();
     window.location.reload();
   }
@@ -1086,7 +1129,7 @@ document.getElementById('btnLockWeeklyReview').addEventListener('click', () => {
   renderDashboard();
 });
 
-// Global hotkeys ('q' or 'c')
+// Hotkeys ('q' or 'c')
 window.addEventListener('keydown', (e) => {
   if ((e.key === 'q' || e.key === 'c') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
     e.preventDefault();
@@ -1097,6 +1140,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Initial Render
+// Initialize Theme & First Render
+applyTheme(currentTheme);
 setupNavigation();
 renderDashboard();

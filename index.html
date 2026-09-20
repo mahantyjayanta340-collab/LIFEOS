@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#090a0f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -10,17 +10,17 @@
   <meta name="description" content="Intentional execution engine connecting long-term ambition to daily action with sustainable gamification and personalized routines.">
   <title>LIFEOS — Personal Life Operating System</title>
   
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/png" href="./icons/favicon.png">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Toast Notification Container for Reminders & Alerts -->
+  <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <div class="app-container">
-    <!-- Desktop Sidebar -->
+    <!-- Desktop Sidebar Navigation -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-icon">
@@ -85,22 +85,49 @@
 
     <!-- Main Viewport -->
     <main class="main-viewport">
-      <!-- In-Browser Install Banner (Shows if eligible) -->
+      <!-- Mobile Top Navigation Header -->
+      <header class="mobile-header">
+        <div class="mobile-brand">
+          <div class="brand-icon" style="width: 28px; height: 28px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+              <path d="M4 14.5L12 3l8 11.5"></path>
+              <path d="M12 3v18"></path>
+            </svg>
+          </div>
+          <span class="brand-title" style="font-size: 1.05rem;">LIFEOS</span>
+        </div>
+        <div class="mobile-header-actions">
+          <button class="theme-toggle-btn themeToggleAction" title="Switch Dark / Light mode">
+            <span class="theme-icon">☀️</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnToggleRemindersMobile" title="Alerts">
+            <span id="reminderIconMobile">🔔</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnInstallAppMobile" title="Install">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </button>
+          <button class="btn btn-primary btn-sm" id="btnMobileQuickAdd">
+            + Task
+          </button>
+        </div>
+      </header>
+
+      <!-- PWA Install Banner -->
       <div class="install-banner" id="pwaInstallBanner" style="display: none;">
         <div class="install-banner-text">
           <span class="install-banner-title">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Install LIFEOS App
           </span>
-          <span class="install-banner-desc">Install to your home screen or desktop for offline access, full-screen view & instant work reminders.</span>
+          <span class="install-banner-desc">Install to your device for offline access & instant scheduled reminders.</span>
         </div>
         <div style="display: flex; gap: 8px;">
-          <button class="btn btn-primary btn-sm" id="btnBannerInstall">Install Now</button>
+          <button class="btn btn-primary btn-sm" id="btnBannerInstall">Install</button>
           <button class="btn btn-secondary btn-sm" id="btnDismissBanner">&times;</button>
         </div>
       </div>
 
-      <!-- Top Persistent Bar -->
+      <!-- Desktop Header -->
       <header class="top-header">
         <div class="header-left">
           <h1 id="currentDateDisplay">Today</h1>
@@ -108,26 +135,29 @@
         </div>
 
         <div class="header-actions">
-          <!-- Install Button in Top Bar -->
-          <button class="btn btn-secondary btn-sm" id="btnInstallApp" style="display: none;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Install App
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn themeToggleAction" title="Switch Theme (Dark / Light)">
+            <span class="theme-icon">☀️</span>
           </button>
 
-          <!-- Reminder Toggle Button -->
-          <button class="btn btn-secondary btn-sm" id="btnToggleReminders" title="Toggle system work & routine notifications">
+          <!-- Reminders -->
+          <button class="btn btn-secondary btn-sm" id="btnToggleRemindersDesktop" title="Toggle work reminders">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <span id="reminderBtnText">Reminders</span>
+            <span id="reminderBtnTextDesktop">Alerts</span>
           </button>
 
-          <div class="stat-pill momentum" title="Continuous Momentum Vector">
+          <div class="stat-pill momentum" title="Momentum Vector">
             <span>⚡ Momentum:</span>
             <strong id="topMomentumVal">50%</strong>
           </div>
-          <div class="stat-pill coins" title="User Coin Balance">
+          <div class="stat-pill coins" title="Coins">
             <span>🪙</span>
             <strong id="topCoinsVal">0</strong>
           </div>
+          <button class="btn btn-secondary btn-sm" id="btnInstallAppDesktop" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Install
+          </button>
           <button class="btn btn-primary" id="openQuickAddBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Quick Add
@@ -141,18 +171,18 @@
         <div class="card hero-progress-card">
           <div class="card-header">
             <div class="card-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
               Daily Progress Execution
             </div>
             <span class="badge badge-epic" id="dailyHeroPercent">0% Done</span>
           </div>
-          <div class="progress-bar-bg" style="height: 10px;">
+          <div class="progress-bar-bg" style="height: 8px;">
             <div class="progress-bar-fill" id="dailyProgressFill" style="width: 0%;"></div>
           </div>
           <div class="hero-stats">
             <div class="hero-stat-item">
               <span class="hero-stat-val" id="statCompletedRatio">0 / 0</span>
-              <span class="hero-stat-label">Tasks Finished</span>
+              <span class="hero-stat-label">Tasks Done</span>
             </div>
             <div class="hero-stat-item">
               <span class="hero-stat-val" id="statFocusTime">0m</span>
@@ -160,11 +190,11 @@
             </div>
             <div class="hero-stat-item">
               <span class="hero-stat-val" id="statXpEarned">+0 XP</span>
-              <span class="hero-stat-label">Today's Yield</span>
+              <span class="hero-stat-label">Today's XP</span>
             </div>
             <div class="hero-stat-item">
               <span class="hero-stat-val" id="statHabitRatio">0 / 0</span>
-              <span class="hero-stat-label">Habits Checked</span>
+              <span class="hero-stat-label">Habits</span>
             </div>
           </div>
         </div>
@@ -180,12 +210,12 @@
               <button class="btn btn-secondary btn-sm" id="btnOpenTaskModalDirect">+ Add Task</button>
             </div>
             <div class="task-list" id="todayTaskList">
-              <!-- Empty state or user-added tasks rendered dynamically -->
+              <!-- Dynamically populated -->
             </div>
           </div>
 
           <!-- Right Column: Focus Timer, Personalized Routine, Habits -->
-          <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; flex-direction: column; gap: 20px;">
             <!-- Integrated Focus Timer with Audio Chime -->
             <div class="card">
               <div class="card-header">
@@ -213,14 +243,11 @@
             <div class="card">
               <div class="card-header">
                 <div class="card-title">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 14 14"></polyline></svg>
                   My Daily Routine
                 </div>
                 <button class="btn btn-secondary btn-sm" id="btnOpenAddRoutineModal">+ Add Block</button>
               </div>
-              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: -8px;">
-                Define your schedule. Reminders trigger automatically if alerts are enabled.
-              </p>
               <div class="timeline-list" id="dashboardRoutineList">
                 <!-- Dynamically populated from state.data.routines -->
               </div>
@@ -249,8 +276,8 @@
           <div class="card-header">
             <div>
               <h2 class="card-title">Personalized Routine Architect</h2>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">
-                Build your customized day structure. Configure timed work blocks with automatic reminders.
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">
+                Build your daily structure with timed work blocks and automated alerts.
               </p>
             </div>
             <button class="btn btn-primary btn-sm" id="btnOpenAddRoutineModal2">+ Add Routine Block</button>
@@ -267,13 +294,11 @@
           <div class="card-header">
             <div>
               <h2 class="card-title">Goal Lineage Tree</h2>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">Long-term Ambitions &rarr; Milestones &rarr; Projects &rarr; Tasks</p>
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">Long-term Ambitions &rarr; Milestones &rarr; Projects &rarr; Tasks</p>
             </div>
             <button class="btn btn-primary btn-sm" id="openAddGoalBtn">+ New Goal</button>
           </div>
-          <div id="questLineageTree">
-            <!-- Populated dynamically -->
-          </div>
+          <div id="questLineageTree"></div>
         </div>
       </section>
 
@@ -283,13 +308,11 @@
           <div class="card-header">
             <div>
               <h2 class="card-title">Habit Progression Matrix</h2>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">Consistency tracking with non-punitive momentum decay.</p>
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">Consistency tracking with non-punitive momentum decay.</p>
             </div>
             <button class="btn btn-primary btn-sm" id="openAddHabitFullBtn">+ Create Habit</button>
           </div>
-          <div class="habit-list" id="fullHabitManagerList">
-            <!-- Populated by app.js -->
-          </div>
+          <div class="habit-list" id="fullHabitManagerList"></div>
         </div>
       </section>
 
@@ -299,32 +322,29 @@
           <!-- Left: Attributes Radar -->
           <div class="card">
             <div class="card-header">
-              <div class="card-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                8-Axis Character Attribute Radar
-              </div>
-              <span class="badge badge-medium">Behavioral Telemetry</span>
+              <div class="card-title">8-Axis Character Attribute Radar</div>
+              <span class="badge badge-medium">Telemetry</span>
             </div>
             <div class="radar-wrapper">
-              <canvas id="attributeRadar" width="360" height="360"></canvas>
+              <canvas id="attributeRadar" width="340" height="340"></canvas>
             </div>
             <div class="attribute-grid" id="attributeCardsGrid"></div>
           </div>
 
           <!-- Right: Momentum & Milestones -->
-          <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="card">
               <div class="card-header">
                 <div class="card-title">Continuous Momentum Vector</div>
                 <span class="badge badge-easy" id="momentumStatusTag">Stabilizing</span>
               </div>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">
-                Grounded in actual daily execution. Missing a day slows momentum gently without punitive resets.
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">
+                Grounded in actual daily execution. Missing a day slows momentum gently without punitive streak resets.
               </p>
-              <div class="progress-bar-bg" style="height: 12px; margin: 8px 0;">
+              <div class="progress-bar-bg" style="height: 10px; margin: 6px 0;">
                 <div class="progress-bar-fill" id="charMomentumFill" style="width: 50%; background: linear-gradient(90deg, #10b981, #34d399);"></div>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-family: var(--font-mono);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-family: var(--font-mono);">
                 <span>Cold (0.0)</span>
                 <span>Stabilizing (0.5)</span>
                 <span>In Flow (0.8)</span>
@@ -336,7 +356,7 @@
               <div class="card-header">
                 <div class="card-title">Pragmatic Achievements</div>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div class="task-item">
                   <div class="task-info">
                     <span class="task-title">First Step: First Task Completed</span>
@@ -363,7 +383,7 @@
           <div class="card-header">
             <div>
               <h2 class="card-title">User-Defined Reward Store</h2>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">Redeem earned coins for real-world guilt-free treats.</p>
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">Redeem earned coins for real-world guilt-free treats.</p>
             </div>
             <button class="btn btn-primary btn-sm" id="openAddRewardBtn">+ Custom Reward</button>
           </div>
@@ -377,11 +397,11 @@
           <div class="card-header">
             <div>
               <h2 class="card-title">Weekly System Review & Calibration</h2>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">Transform execution data into behavioral adaptation.</p>
+              <p style="font-size: 0.82rem; color: var(--text-secondary);">Transform execution data into behavioral adaptation.</p>
             </div>
             <span class="badge badge-epic">Sunday Protocol</span>
           </div>
-          <div class="hero-stats" style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+          <div class="hero-stats" style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px;">
             <div class="hero-stat-item">
               <span class="hero-stat-val" id="revCompletedCount">0 / 0</span>
               <span class="hero-stat-label">Tasks Finished</span>
@@ -396,11 +416,11 @@
             </div>
             <div class="hero-stat-item">
               <span class="hero-stat-val" id="revXpYield">+0 XP</span>
-              <span class="hero-stat-label">Attributes Added</span>
+              <span class="hero-stat-label">Attributes</span>
             </div>
           </div>
           <div>
-            <h3 style="font-size: 0.95rem; margin-bottom: 10px;">What caused friction or missed items this week?</h3>
+            <h3 style="font-size: 0.9rem; margin-bottom: 8px;">What caused friction or missed items this week?</h3>
             <div class="friction-options">
               <div class="friction-chip selected" data-friction="scope">Overestimated Daily Capacity</div>
               <div class="friction-chip" data-friction="sleep">Poor Sleep & Fatigue</div>
@@ -420,11 +440,11 @@
           <div class="card-header">
             <h2 class="card-title">Application Settings & Data Control</h2>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
               All data is stored locally in your browser with offline-first PWA caching. No external tracking or data scraping.
             </p>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
               <button class="btn btn-secondary" id="btnExportData">Export Data (JSON Backup)</button>
               <button class="btn btn-secondary" id="btnImportData">Import Data (Restore)</button>
               <button class="btn btn-secondary" id="btnResetData" style="color: var(--accent-danger);">Clean Reset</button>
@@ -460,7 +480,7 @@
     </nav>
   </div>
 
-  <!-- MODAL: QUICK ADD TASK (WITH OPTIONAL REMINDER) -->
+  <!-- MODAL: QUICK ADD TASK -->
   <div class="modal-backdrop" id="quickAddModal">
     <div class="modal-content">
       <div class="card-header">
@@ -511,7 +531,7 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD / EDIT PERSONALIZED ROUTINE BLOCK -->
+  <!-- MODAL: ADD / EDIT ROUTINE BLOCK -->
   <div class="modal-backdrop" id="routineModal">
     <div class="modal-content">
       <div class="card-header">
@@ -519,18 +539,18 @@
         <button class="btn btn-secondary btn-sm closeModalBtn">&times;</button>
       </div>
       <form id="routineForm" style="display: flex; flex-direction: column; gap: 14px;">
-        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 10px;">
           <div class="form-group">
             <label class="form-label">Start Time</label>
             <input type="time" class="form-input" id="routineTimeInput" value="09:00" required>
           </div>
           <div class="form-group">
-            <label class="form-label">Activity / Work Title</label>
-            <input type="text" class="form-input" id="routineTitleInput" placeholder="e.g. Deep Work Session" required>
+            <label class="form-label">Activity Title</label>
+            <input type="text" class="form-input" id="routineTitleInput" placeholder="e.g. Deep Work Core Block" required>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Life Area / Category</label>
+          <label class="form-label">Category</label>
           <select class="form-select" id="routineAreaInput">
             <option value="Deep Work" selected>Deep Work & Engineering</option>
             <option value="Academic">Academic & Studies</option>
@@ -539,13 +559,13 @@
             <option value="Personal">Personal & Rest</option>
           </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
           <input type="checkbox" id="routineReminderCheckbox" checked style="width: 16px; height: 16px;">
-          <label for="routineReminderCheckbox" style="font-size: 0.86rem; color: var(--text-primary); cursor: pointer;">
-            🔔 Send reminder notification when it's time
+          <label for="routineReminderCheckbox" style="font-size: 0.85rem; cursor: pointer;">
+            🔔 Send reminder notification at this time
           </label>
         </div>
-        <button type="submit" class="btn btn-primary" style="margin-top: 8px;">Save Routine Block</button>
+        <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Save Routine Block</button>
       </form>
     </div>
   </div>
@@ -560,7 +580,7 @@
       <form id="addHabitForm" style="display: flex; flex-direction: column; gap: 14px;">
         <div class="form-group">
           <label class="form-label">Habit Name</label>
-          <input type="text" class="form-input" id="habitTitleInput" placeholder="e.g. Morning 20m Focused Reading" required>
+          <input type="text" class="form-input" id="habitTitleInput" placeholder="e.g. Read 20 mins" required>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
@@ -603,22 +623,22 @@
     </div>
   </div>
 
-  <!-- MODAL: HOW TO INSTALL (PWA GUIDANCE) -->
+  <!-- MODAL: INSTALLATION GUIDE -->
   <div class="modal-backdrop" id="installGuideModal">
     <div class="modal-content">
       <div class="card-header">
-        <h3 class="card-title">Install LIFEOS</h3>
+        <h3 class="card-title">Install LIFEOS PWA</h3>
         <button class="btn btn-secondary btn-sm closeModalBtn">&times;</button>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
-        <p><strong style="color: var(--text-primary);">On Android (Chrome / Brave / Edge):</strong><br>Tap the browser menu (<strong>&vellip;</strong>) and select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.</p>
-        <p><strong style="color: var(--text-primary);">On iPhone / iPad (Safari):</strong><br>Tap the <strong>Share</strong> button at the bottom (square with arrow pointing up) &rarr; scroll down and tap <strong>"Add to Home Screen"</strong>.</p>
-        <p><strong style="color: var(--text-primary);">On Desktop (Chrome / Edge / Brave):</strong><br>Click the <strong>Install</strong> icon in your browser URL bar or browser menu &rarr; <strong>"Install LIFEOS"</strong>.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5;">
+        <p><strong style="color: var(--text-primary);">On Android (Chrome / Brave / Edge):</strong><br>Tap the <strong>"Install"</strong> button above, or tap the browser menu (<strong>&vellip;</strong>) and select <strong>"Install app"</strong>.</p>
+        <p><strong style="color: var(--text-primary);">On iPhone / iPad (Safari):</strong><br>Tap the <strong>Share</strong> button (box with upward arrow) &rarr; select <strong>"Add to Home Screen"</strong>.</p>
+        <p><strong style="color: var(--text-primary);">On Desktop:</strong><br>Click the <strong>Install</strong> icon on the right side of your browser URL address bar.</p>
       </div>
-      <button class="btn btn-primary closeModalBtn" style="margin-top: 8px;">Got It</button>
+      <button class="btn btn-primary closeModalBtn" style="margin-top: 6px;">Understood</button>
     </div>
   </div>
 
-  <script src="./app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
