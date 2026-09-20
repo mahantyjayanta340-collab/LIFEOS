@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#090a0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LIFEOS">
+  <meta name="description" content="Intentional execution engine connecting long-term ambition to daily action with sustainable gamification.">
+  <title>LIFEOS — Personal Life Operating System</title>
+  
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./icons/favicon.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14.5L12 3l8 11.5"></path>
+            <path d="M12 3v18"></path>
+          </svg>
+        </div>
+        <span class="brand-title">LIFEOS</span>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item active" data-view="view-today">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Today
+        </li>
+        <li class="nav-item" data-view="view-quests">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Quests & Goals
+        </li>
+        <li class="nav-item" data-view="view-habits">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Habits & Routine
+        </li>
+        <li class="nav-item" data-view="view-character">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Character & Telemetry
+        </li>
+        <li class="nav-item" data-view="view-rewards">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 6v12"></path></svg>
+          Rewards Shop
+        </li>
+        <li class="nav-item" data-view="view-review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+          Weekly Review
+        </li>
+        <li class="nav-item" data-view="view-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Settings
+        </li>
+      </ul>
+
+      <!-- User Mini Telemetry -->
+      <div class="user-widget">
+        <div class="user-widget-header">
+          <span id="sideUserName">User</span>
+          <span class="level-badge" id="sideLevelBadge">LVL 12</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="sideXpFill" style="width: 65%;"></div>
+        </div>
+        <div class="user-stats-row">
+          <span id="sideXpText">1,420 / 2,100 XP</span>
+          <span id="sideCoinText">485 🪙</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      <!-- Top Persistent Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 id="currentDateDisplay">Sunday, September 20</h1>
+          <p id="subGreeting">Execution Command Center &bull; Momentum Active</p>
+        </div>
+
+        <div class="header-actions">
+          <div class="stat-pill momentum" title="Continuous Momentum Vector">
+            <span>⚡ Momentum:</span>
+            <strong id="topMomentumVal">84%</strong>
+          </div>
+          <div class="stat-pill coins" title="User Coin Balance">
+            <span>🪙</span>
+            <strong id="topCoinsVal">485</strong>
+          </div>
+          <button class="btn btn-primary" id="openQuickAddBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Quick Add
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW 1: TODAY COMMAND CENTER -->
+      <section class="view-content active" id="view-today">
+        <!-- Daily Progress Hero -->
+        <div class="card hero-progress-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              Daily Progress Execution
+            </div>
+            <span class="badge badge-epic" id="dailyHeroPercent">78% Done</span>
+          </div>
+          <div class="progress-bar-bg" style="height: 10px;">
+            <div class="progress-bar-fill" id="dailyProgressFill" style="width: 78%;"></div>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat-item">
+              <span class="hero-stat-val" id="statCompletedRatio">3 / 4</span>
+              <span class="hero-stat-label">Tasks Finished</span>
+            </div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-val" id="statFocusTime">2h 30m</span>
+              <span class="hero-stat-label">Deep Work</span>
+            </div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-val" id="statXpEarned">+100 XP</span>
+              <span class="hero-stat-label">Daily Yield</span>
+            </div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-val" id="statHabitRatio">2 / 2</span>
+              <span class="hero-stat-label">Habits Checked</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Tasks Queue -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Focus Queue (Today's Non-Negotiables)
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnFilterTasks">All Active</button>
+            </div>
+            <div class="task-list" id="todayTaskList">
+              <!-- Dynamically Populated by app.js -->
+            </div>
+          </div>
+
+          <!-- Right Column: Focus Timer, Habits, Routine -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Integrated Focus Timer -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  Deep Work Engine
+                </div>
+                <div class="energy-selector">
+                  <span>Energy:</span>
+                  <span class="energy-chip active" data-energy="high">High</span>
+                  <span class="energy-chip" data-energy="medium">Med</span>
+                  <span class="energy-chip" data-energy="low">Low</span>
+                </div>
+              </div>
+              <div class="timer-container">
+                <div class="timer-digits" id="timerDisplay">25:00</div>
+                <div class="timer-controls">
+                  <button class="btn btn-primary" id="startTimerBtn">Start Focus Block</button>
+                  <button class="btn btn-secondary" id="resetTimerBtn">Reset</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Daily Habits Checklist -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                  Daily Core Habits
+                </div>
+                <button class="btn btn-secondary btn-sm" id="openAddHabitBtn">+ Habit</button>
+              </div>
+              <div class="habit-list" id="todayHabitList">
+                <!-- Dynamically Populated -->
+              </div>
+            </div>
+
+            <!-- Routine Timeline Sequence -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                  Planned vs Actual Routine
+                </div>
+              </div>
+              <div class="timeline-list" id="routineTimelineList">
+                <div class="timeline-item"><span class="timeline-dot"></span><span class="timeline-time">06:30</span><span class="timeline-action">Wake up & Hydrate (500ml)</span></div>
+                <div class="timeline-item"><span class="timeline-dot"></span><span class="timeline-time">07:00</span><span class="timeline-action">Morning Trail Run (3km)</span></div>
+                <div class="timeline-item"><span class="timeline-dot"></span><span class="timeline-time">09:00</span><span class="timeline-action">University / Core Work Sessions</span></div>
+                <div class="timeline-item"><span class="timeline-dot"></span><span class="timeline-time">15:00</span><span class="timeline-action">Engineering Mathematics (+40 XP)</span></div>
+                <div class="timeline-item"><span class="timeline-dot"></span><span class="timeline-time">17:00</span><span class="timeline-action">C Programming Deep Work (+35 XP)</span></div>
+                <div class="timeline-item"><span class="timeline-dot"></span><span class="timeline-time">21:00</span><span class="timeline-action">Technical Reading & Wind Down</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: QUESTS & GOAL HIERARCHY -->
+      <section class="view-content" id="view-quests">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Goal Lineage Tree</h2>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">Long-term Ambitions &rarr; Milestones &rarr; Projects &rarr; Tasks</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="openAddGoalBtn">+ New Goal</button>
+          </div>
+          
+          <div id="questLineageTree">
+            <!-- Dynamically populated hierarchical tree -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: HABITS & ROUTINES -->
+      <section class="view-content" id="view-habits">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Habit Progression Matrix</h2>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">Consistency tracking with non-punitive momentum decay.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="openAddHabitFullBtn">+ Create Habit</button>
+          </div>
+          <div class="habit-list" id="fullHabitManagerList">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: CHARACTER TELEMETRY & ATTRIBUTES -->
+      <section class="view-content" id="view-character">
+        <div class="dashboard-grid">
+          <!-- Left: Attributes Radar -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                8-Axis Character Attribute Radar
+              </div>
+              <span class="badge badge-medium">Behavioral Telemetry</span>
+            </div>
+            <div class="radar-wrapper">
+              <canvas id="attributeRadar" width="360" height="360"></canvas>
+            </div>
+            <div class="attribute-grid" id="attributeCardsGrid">
+              <!-- Dynamically filled with attribute values -->
+            </div>
+          </div>
+
+          <!-- Right: Momentum & Milestones -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Continuous Momentum Vector</div>
+                <span class="badge badge-easy" id="momentumStatusTag">In Flow</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                Evaluated from real-world execution velocity. Missing a day slows momentum gently without punitive streak resets.
+              </p>
+              <div class="progress-bar-bg" style="height: 12px; margin: 8px 0;">
+                <div class="progress-bar-fill" id="charMomentumFill" style="width: 84%; background: linear-gradient(90deg, #10b981, #34d399);"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-family: var(--font-mono);">
+                <span>Cold (0.0)</span>
+                <span>Stabilizing (0.5)</span>
+                <span>In Flow (0.8)</span>
+                <span>Apex (1.0)</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Pragmatic Achievements</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="task-item">
+                  <div class="task-info">
+                    <span class="task-title">Deep Worker: 50+ Focus Hours</span>
+                    <span class="task-meta">Unlocked on reaching verified deep work milestone</span>
+                  </div>
+                  <span class="badge badge-epic">Earned</span>
+                </div>
+                <div class="task-item">
+                  <div class="task-info">
+                    <span class="task-title">Algorithmic Foundation</span>
+                    <span class="task-meta">Completed first 50 DSA Problem Units</span>
+                  </div>
+                  <span class="badge badge-medium">Earned</span>
+                </div>
+                <div class="task-item">
+                  <div class="task-info">
+                    <span class="task-title">Resilience Master</span>
+                    <span class="task-meta">Completed Recovery Quest after routine interruption</span>
+                  </div>
+                  <span class="badge badge-easy">Earned</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: USER-DEFINED REWARDS SHOP -->
+      <section class="view-content" id="view-rewards">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">User-Defined Reward Store</h2>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">Redeem earned coins for real-world guilt-free rejuvenation.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="openAddRewardBtn">+ Custom Reward</button>
+          </div>
+          <div class="reward-grid" id="rewardStoreGrid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: WEEKLY REVIEW WIZARD -->
+      <section class="view-content" id="view-review">
+        <div class="card review-wizard">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Weekly System Review & Calibration</h2>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">Transform raw tracking data into actionable behavioral adaptation.</p>
+            </div>
+            <span class="badge badge-epic">Sunday Protocol</span>
+          </div>
+
+          <!-- Step 1: Telemetry Digest -->
+          <div class="hero-stats" style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+            <div class="hero-stat-item">
+              <span class="hero-stat-val">38 / 45</span>
+              <span class="hero-stat-label">Tasks (84.4%)</span>
+            </div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-val">18.5 hrs</span>
+              <span class="hero-stat-label">Verified Deep Work</span>
+            </div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-val">0.865</span>
+              <span class="hero-stat-label">Avg Momentum</span>
+            </div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-val">+640 XP</span>
+              <span class="hero-stat-label">Attributes Added</span>
+            </div>
+          </div>
+
+          <!-- Step 2: Friction Attribution -->
+          <div>
+            <h3 style="font-size: 0.95rem; margin-bottom: 10px;">What primarily caused friction or missed items this week?</h3>
+            <div class="friction-options">
+              <div class="friction-chip selected" data-friction="scope">Overestimated Daily Capacity</div>
+              <div class="friction-chip" data-friction="sleep">Poor Sleep & Fatigue</div>
+              <div class="friction-chip" data-friction="fire-drills">Academic / Job Fire drills</div>
+              <div class="friction-chip" data-friction="planning">Unclear Task Specifications</div>
+            </div>
+          </div>
+
+          <!-- Step 3: Tactical System Recalibration -->
+          <div style="background: var(--bg-elevated); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <h4 style="font-size: 0.9rem; color: #818cf8; margin-bottom: 6px;">System Recommendation</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+              Your peak completion velocity occurs before 19:00. Evening tasks experienced a 65% drop-off. 
+              <strong>Action:</strong> Auto-recalibrate next week's focus ceiling to 20 planned hours and reserve evenings strictly for recovery and reading.
+            </p>
+          </div>
+
+          <button class="btn btn-success" id="btnLockWeeklyReview">
+            Lock In Weekly Review (+100 Discipline XP)
+          </button>
+        </div>
+      </section>
+
+      <!-- VIEW 7: SETTINGS & BACKUP -->
+      <section class="view-content" id="view-settings">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Application Settings & Data Control</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+              All data is stored locally in your browser cache with offline-first PWA synchronization. You maintain full ownership of your behavioral telemetry.
+            </p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn btn-secondary" id="btnExportData">Export Data (JSON Backup)</button>
+              <button class="btn btn-secondary" id="btnImportData">Import Data (Restore)</button>
+              <button class="btn btn-secondary" id="btnResetData" style="color: var(--accent-danger);">Reset to Demo Seeds</button>
+            </div>
+            <input type="file" id="importFileInput" style="display: none;" accept=".json">
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-nav">
+      <div class="mobile-nav-item active" data-view="view-today">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+        Today
+      </div>
+      <div class="mobile-nav-item" data-view="view-quests">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Quests
+      </div>
+      <div class="mobile-nav-item" data-view="view-habits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Habits
+      </div>
+      <div class="mobile-nav-item" data-view="view-character">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Profile
+      </div>
+      <div class="mobile-nav-item" data-view="view-rewards">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path></svg>
+        Store
+      </div>
+    </nav>
+  </div>
+
+  <!-- MODAL: QUICK ADD TASK -->
+  <div class="modal-backdrop" id="quickAddModal">
+    <div class="modal-content">
+      <div class="card-header">
+        <h3 class="card-title">Quick Capture Task</h3>
+        <button class="btn btn-secondary btn-sm closeModalBtn">&times;</button>
+      </div>
+      <form id="quickAddForm" style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Task Title</label>
+          <input type="text" class="form-input" id="taskTitleInput" placeholder="e.g. Solve 3 Binary Search Trees" required autofocus>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Difficulty / XP</label>
+            <select class="form-select" id="taskDifficultyInput">
+              <option value="easy">Easy (+15 XP, 1 Coin)</option>
+              <option value="medium" selected>Medium (+35 XP, 3 Coins)</option>
+              <option value="hard">Hard (+70 XP, 7 Coins)</option>
+              <option value="epic">Epic (+150 XP, 15 Coins)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Est. Duration (Min)</label>
+            <input type="number" class="form-input" id="taskDurationInput" value="45" min="5" step="5">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Primary Attribute</label>
+            <select class="form-select" id="taskAttributeInput">
+              <option value="technical" selected>Technical</option>
+              <option value="knowledge">Knowledge</option>
+              <option value="fitness">Fitness</option>
+              <option value="discipline">Discipline</option>
+              <option value="communication">Communication</option>
+              <option value="creativity">Creativity</option>
+              <option value="finance">Finance</option>
+              <option value="social">Social</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attach to Project</label>
+            <select class="form-select" id="taskProjectInput">
+              <option value="p1">DSA Foundation</option>
+              <option value="p2">C Fundamentals</option>
+              <option value="p3">Health Baseline</option>
+              <option value="p4">General Execution</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 8px;">Add to Focus Queue</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD CUSTOM REWARD -->
+  <div class="modal-backdrop" id="addRewardModal">
+    <div class="modal-content">
+      <div class="card-header">
+        <h3 class="card-title">Define Custom Reward</h3>
+        <button class="btn btn-secondary btn-sm closeModalBtn">&times;</button>
+      </div>
+      <form id="addRewardForm" style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Reward Name</label>
+          <input type="text" class="form-input" id="rewardTitleInput" placeholder="e.g. Special Pour-Over Coffee" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Coin Cost</label>
+          <input type="number" class="form-input" id="rewardCostInput" value="30" min="5" step="5" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Save to Reward Shop</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
